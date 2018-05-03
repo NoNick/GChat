@@ -57,10 +57,14 @@ public class MessagingServiceImpl implements MessagingService {
     @Override
     public void subscribeUser(Room room, User user, Map<User, WebSocketSession> sessionByUser) {
         synchronized (usersByRoom) {
+
             Set<User> users = usersByRoom.get(room);
             if (users == null) {
                 users = new HashSet<>();
                 usersByRoom.put(room, users);
+            }
+            if (usersByRoom.get(room).contains(user)) {
+                return;
             }
             users.add(user);
 
@@ -122,6 +126,7 @@ public class MessagingServiceImpl implements MessagingService {
         result.setRoom(room);
         result.setEpoch(System.currentTimeMillis());
         entityManager.persist(result);
+        entityManager.flush(); // set id for the massage
         return result;
     }
 
@@ -132,6 +137,8 @@ public class MessagingServiceImpl implements MessagingService {
         result.setEpoch(System.currentTimeMillis() / 1000);
         result.setSecret(false);
         result.setText("User " + user.getName() + " subscribed to the room " + room.getName());
+        entityManager.persist(result);
+        entityManager.flush(); // set id for the massage
         return result;
     }
 }

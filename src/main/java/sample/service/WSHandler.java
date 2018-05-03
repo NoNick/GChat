@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.*;
 import sample.Ranks;
-import sample.model.Message;
 import sample.model.Room;
 import sample.model.User;
 
@@ -40,6 +39,7 @@ public class WSHandler implements WebSocketHandler {
             session.sendMessage(new TextMessage("Unauthorized"));
             return;
         }
+        sessionByUser.put(user, session);
         Room room = null;
         if (roomName != null) {
             room = entityManager.find(Room.class, roomName);
@@ -53,14 +53,12 @@ public class WSHandler implements WebSocketHandler {
         switch (messageJSON.get("action").toString()) {
             case "salute":
                 session.sendMessage(new TextMessage("Your rank is " + Ranks.getRankName(user.getRank())));
-                sessionByUser.put(user, session);
                 break;
             case "report":
                 messagingService.report(user, room, messageText, secret, sessionByUser);
                 break;
             case "subscribe":
                 messagingService.subscribeUser(room, user, sessionByUser);
-                session.sendMessage(new TextMessage("Success"));
                 break;
         }
     }

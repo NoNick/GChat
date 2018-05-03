@@ -79,4 +79,42 @@ public class Message {
         result.put("room", getRoom().getName());
         return result;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Message message = (Message) o;
+
+        if (id != message.id) return false;
+        if (epoch != message.epoch) return false;
+        if (secret != message.secret) return false;
+        if (text != null ? !text.equals(message.text) : message.text != null) return false;
+        if (user != null ? !user.equals(message.user) : message.user != null) return false;
+        return room != null ? room.equals(message.room) : message.room == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + (text != null ? text.hashCode() : 0);
+        result = 31 * result + (int) (epoch ^ (epoch >>> 32));
+        result = 31 * result + (secret ? 1 : 0);
+        result = 31 * result + (user != null ? user.getName().hashCode() : 0);
+        result = 31 * result + (room != null ? room.getName().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", epoch=" + epoch +
+                ", secret=" + secret +
+                ", user=" + user.getName() +
+                ", room=" + room.getName() +
+                '}';
+    }
 }

@@ -13,7 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <springframework.version>4.3.4.RELEASE</springframework.version>
+        <springframework.version>5.0.5.RELEASE</springframework.version>
         <hibernate.version>5.2.5.Final</hibernate.version>
         <hibernate-validator.version>5.2.4.Final</hibernate-validator.version>
         <postgresql.connector.version>9.4.1212</postgresql.connector.version>
