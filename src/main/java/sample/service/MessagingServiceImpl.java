@@ -1,6 +1,5 @@
 package sample.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.TextMessage;
@@ -125,8 +124,6 @@ public class MessagingServiceImpl implements MessagingService {
         entityManager.persist(result);
         return result;
     }
-
-
 
     private Message constructSubscribedMessage(User user, Room room) {
         Message result = new Message();
