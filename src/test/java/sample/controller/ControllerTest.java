@@ -1,5 +1,6 @@
 package sample.controller;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.Before;
@@ -22,6 +23,8 @@ import sample.configuration.AppInitializer;
 import sample.configuration.HibernateConfiguration;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -99,6 +102,13 @@ public class ControllerTest {
         final String VAVILEN_MSG2 = constructMessage(
                 "Vavilen msg#2", true,"room0", "Vavilen", VAVILEN_HASH
         ).toJSONString();
+        final Map<Long, Integer> recipientsSizeByMessageId = new HashMap<>();
+        recipientsSizeByMessageId.put(1L, 1);
+        recipientsSizeByMessageId.put(2L, 1);
+        recipientsSizeByMessageId.put(3L, 2);
+        recipientsSizeByMessageId.put(4L, 2);
+        recipientsSizeByMessageId.put(5L, 2);
+        recipientsSizeByMessageId.put(6L, 1);
 
         handler.handleMessage(Mockito.mock(WebSocketSession.class), new TextMessage(SIMON_MSG1));
         handler.handleMessage(Mockito.mock(WebSocketSession.class), new TextMessage(VAVILEN_MSG1));
@@ -113,6 +123,16 @@ public class ControllerTest {
                             (JSONObject) new JSONParser().parse(result.getResponse().getContentAsString());
                     assertEquals(1, resultJSON.size());
                     assertEquals(6L, resultJSON.get("room0")); // 2 subscriptions and 4 reports
+                });
+        mvc.perform(post("/pleaseGeneral")
+                .param("name", "Vavilen")
+                .param("hash", VAVILEN_HASH))
+                .andExpect(result -> {
+                    ((JSONArray) new JSONParser().parse(result.getResponse().getContentAsString())).forEach(obj -> {
+                        JSONObject json = (JSONObject) obj;
+                        int recipientsN = ((JSONArray) json.get("recipients")).size();
+                        assertEquals((int) recipientsSizeByMessageId.get(((JSONObject) obj).get("id")), recipientsN);
+                    });
                 });
     }
 
