@@ -1,5 +1,6 @@
 package sample.controller;
 
+import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +15,7 @@ import org.springframework.web.context.WebApplicationContext;
 import sample.configuration.AppConfig;
 import sample.configuration.AppInitializer;
 import sample.configuration.HibernateConfiguration;
+import sample.service.WSHandler;
 
 import java.io.IOException;
 
@@ -26,8 +28,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class ControllerTest {
     @Autowired
     private WebApplicationContext context;
+    @Autowired
+    private WSHandler handler;
 
     private MockMvc mvc;
+
+    private static final String SIMON_HASH = "E+pl1T31nObs76mdbZORgQ==";
+    private static final String VAVILEN_HASH = "fYKrKtbVblnWFo/4EfVGmg==";
 
     @Before
     public void setup() throws IOException {
@@ -40,7 +47,7 @@ public class ControllerTest {
     public void authorize() throws Exception {
         mvc.perform(post("/salute")
                 .param("name", "Simon")
-                .param("hash", "E+pl1T31nObs76mdbZORgQ=="))
+                .param("hash", SIMON_HASH))
                 .andExpect(result -> {
                     assertEquals("You are Soldier", result.getResponse().getContentAsString());
                 });
@@ -58,7 +65,7 @@ public class ControllerTest {
                 });
         mvc.perform(post("/salute")
                 .param("name", "Vavilen")
-                .param("hash", "fYKrKtbVblnWFo/4EfVGmg=="))
+                .param("hash", VAVILEN_HASH))
                 .andExpect(result -> {
                     assertEquals("You are General", result.getResponse().getContentAsString());
                 });
@@ -72,5 +79,14 @@ public class ControllerTest {
                 .andExpect(result -> {
                     assertEquals("Unauthorized", result.getResponse().getContentAsString());
                 });
+    }
+
+    @Test
+    public void testStat() throws Exception {
+
+    }
+
+    private JSONObject constructMessage() {
+
     }
 }
