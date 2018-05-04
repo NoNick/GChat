@@ -10,6 +10,7 @@ import java.util.Set;
 
 public interface MessagingService {
     Map<Room, Integer> getRoomMessagesNumber();
+
     Map<Message, Set<User>> getReceivers();
 
     void report(User user, Room room, String text, boolean secret, Map<User, WebSocketSession> sessionByUser);
