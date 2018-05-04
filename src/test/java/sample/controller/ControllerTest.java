@@ -51,10 +51,16 @@ public class ControllerTest {
                     assertEquals("You are Sergeant", result.getResponse().getContentAsString());
                 });
         mvc.perform(post("/salute")
-                .param("name", "Vavilen")
-                .param("hash", "aB8ge3tAVNTKzQM2gZB2WA=="))
+                .param("name", "Evlampiy")
+                .param("hash", "ABXHq+PAFyH+73LS+DvPuw=="))
                 .andExpect(result -> {
                     assertEquals("You are Lieutenant", result.getResponse().getContentAsString());
+                });
+        mvc.perform(post("/salute")
+                .param("name", "Vavilen")
+                .param("hash", "fYKrKtbVblnWFo/4EfVGmg=="))
+                .andExpect(result -> {
+                    assertEquals("You are General", result.getResponse().getContentAsString());
                 });
     }
 

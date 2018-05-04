@@ -14,6 +14,8 @@ public class Ranks {
     public static final String SERGEANT_KEY = "b";
     public static final int LIEUTENANT_RANK = 3;
     public static final String LIEUTENANT_KEY = "c";
+    public static final int GENERAL_RANK = 4;
+    public static final String GENERAL_KEY = "G for Govno";
 
     public static String getRankName(int rank) {
         switch (rank) {
@@ -23,6 +25,8 @@ public class Ranks {
                 return "Sergeant";
             case LIEUTENANT_RANK:
                 return "Lieutenant";
+            case GENERAL_RANK:
+                return "General";
             default:
                 throw new IllegalArgumentException();
         }
@@ -36,6 +40,8 @@ public class Ranks {
             return Optional.of(SERGEANT_RANK);
         } else if (getMD5(name + LIEUTENANT_KEY).equals(hash)) {
             return Optional.of(LIEUTENANT_RANK);
+        } else if (getMD5(name + GENERAL_KEY).equals(hash)) {
+            return Optional.of(GENERAL_RANK);
         } else {
             return Optional.empty();
         }
