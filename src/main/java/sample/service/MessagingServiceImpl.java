@@ -42,15 +42,13 @@ public class MessagingServiceImpl implements MessagingService {
     }
 
     @Override
-    public String report(User user, Room room, String text, boolean secret, Map<User, WebSocketSession> sessionByUser) {
+    public void report(User user, Room room, String text, boolean secret, Map<User, WebSocketSession> sessionByUser) {
         synchronized (messagesByRoom) {
             subscribeUser(room, user, sessionByUser);
 
             Message msg = constructMessage(user, room, text, secret);
             addMessageInRoom(room, msg);
             sendMessageToSubscribers(msg, sessionByUser);
-
-            return "Success";
         }
     }
 
