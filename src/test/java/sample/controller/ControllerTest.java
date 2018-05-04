@@ -1,21 +1,25 @@
 package sample.controller;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.WebSocketSession;
 import sample.configuration.AppConfig;
 import sample.configuration.AppInitializer;
 import sample.configuration.HibernateConfiguration;
-import sample.service.WSHandler;
 
 import java.io.IOException;
 
@@ -28,8 +32,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class ControllerTest {
     @Autowired
     private WebApplicationContext context;
-    @Autowired
-    private WSHandler handler;
+    @Autowired @Qualifier("webSocketHandler")
+    private WebSocketHandler handler;
 
     private MockMvc mvc;
 
@@ -83,10 +87,43 @@ public class ControllerTest {
 
     @Test
     public void testStat() throws Exception {
+        final String SIMON_MSG1 = constructMessage(
+                "Simon msg#1", false,"room0", "Simon", SIMON_HASH
+        ).toJSONString();
+        final String SIMON_MSG2 = constructMessage(
+                "Simon msg#2", true,"room0", "Simon", SIMON_HASH
+        ).toJSONString();
+        final String VAVILEN_MSG1 = constructMessage(
+                "Vavilen msg#1", false,"room0", "Vavilen", VAVILEN_HASH
+        ).toJSONString();
+        final String VAVILEN_MSG2 = constructMessage(
+                "Vavilen msg#2", true,"room0", "Vavilen", VAVILEN_HASH
+        ).toJSONString();
 
+        handler.handleMessage(Mockito.mock(WebSocketSession.class), new TextMessage(SIMON_MSG1));
+        handler.handleMessage(Mockito.mock(WebSocketSession.class), new TextMessage(VAVILEN_MSG1));
+        handler.handleMessage(Mockito.mock(WebSocketSession.class), new TextMessage(SIMON_MSG2));
+        handler.handleMessage(Mockito.mock(WebSocketSession.class), new TextMessage(VAVILEN_MSG2));
+
+        mvc.perform(post("/rooms")
+                .param("name", "Vavilen")
+                .param("hash", VAVILEN_HASH))
+                .andExpect(result -> {
+                    JSONObject resultJSON =
+                            (JSONObject) new JSONParser().parse(result.getResponse().getContentAsString());
+                    assertEquals(1, resultJSON.size());
+                    assertEquals(6L, resultJSON.get("room0")); // 2 subscriptions and 4 reports
+                });
     }
 
-    private JSONObject constructMessage() {
-
+    private JSONObject constructMessage(String text, boolean secret, String roomName, String username, String hash) {
+        JSONObject msg = new JSONObject();
+        msg.put("action", "report");
+        msg.put("message", text);
+        msg.put("room", roomName);
+        msg.put("secret", secret);
+        msg.put("name", username);
+        msg.put("hash", hash);
+        return msg;
     }
 }

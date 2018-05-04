@@ -36,15 +36,13 @@ class Controller {
 
     @RequestMapping(value="/pleaseGeneral", method=RequestMethod.POST, produces = "application/json; charset=UTF-8")
     public @ResponseBody String getReceivedMessages(@RequestParam(name = "hash") String hash,
-                                       @RequestParam(name = "name") String name,
-                                       @RequestParam(name = "room") String room) {
+                                       @RequestParam(name = "name") String name) {
         return constructReceiversResponse(messagingService.getReceivers()).toJSONString();
     }
 
     @RequestMapping(value="/rooms", method=RequestMethod.POST, produces = "application/json; charset=UTF-8")
     public @ResponseBody String getRooms(@RequestParam(name = "hash") String hash,
-                                       @RequestParam(name = "name") String name,
-                                       @RequestParam(name = "room") String room) {
+                                       @RequestParam(name = "name") String name) {
         return constructRoomsResponse(messagingService.getRoomMessagesNumber()).toJSONString();
     }
 
