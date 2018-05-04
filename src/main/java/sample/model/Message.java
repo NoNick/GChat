@@ -77,6 +77,8 @@ public class Message {
         result.put("text", text);
         result.put("epoch", epoch);
         result.put("room", getRoom().getName());
+        result.put("author", user.getName());
+        result.put("secret", secret);
         return result;
     }
 
