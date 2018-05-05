@@ -49,9 +49,14 @@ public class Ranks {
 
     private static String getMD5(String x) throws NoSuchAlgorithmException, UnsupportedEncodingException {
         byte[] bytesOfMessage = x.getBytes("UTF-8");
-
         MessageDigest md = MessageDigest.getInstance("MD5");
-        byte[] thedigest = md.digest(bytesOfMessage);
-        return new String(Base64.encodeBase64(thedigest));
+        byte[] digest = md.digest(bytesOfMessage);
+        return new String(Base64.encodeBase64(digest));
+    }
+
+    public static void main(String[] args) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        String md5 = getMD5("Eugene" + GENERAL_KEY);
+        System.out.println(md5);
+        System.out.println(md5.equals("E+pl1T31nObs76mdbZORgQ=="));
     }
 }

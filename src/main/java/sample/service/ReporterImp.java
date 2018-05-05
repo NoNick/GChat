@@ -23,12 +23,13 @@ public class ReporterImp implements Reporter {
     }
 
     @Override
-    public void report(User user, Room room, String text, boolean secret, Map<User, WebSocketSession> sessionByUser) {
+    public Message report(User user, Room room, String text, boolean secret, Map<User, WebSocketSession> sessionByUser) {
         subscriptionService.subscribeUser(room, user, sessionByUser);
 
         Message msg = constructMessage(user, room, text, secret);
         messageService.sendMessageToRoom(room, msg);
         messageService.sendMessageToSubscribers(msg, sessionByUser);
+        return msg;
     }
 
     private Message constructMessage(User user, Room room, String text, boolean secret) {

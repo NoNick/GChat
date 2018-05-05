@@ -26,6 +26,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(webSocketHandler, "/WebSocket").setAllowedOrigins("*");
+//                .setHandshakeHandler();
     }
 
     @Bean
@@ -37,4 +38,5 @@ public class WebSocketConfig implements WebSocketConfigurer {
         container.setMaxSessionIdleTimeout(10000000L);
         return container;
     }
+
 }

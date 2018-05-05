@@ -30,11 +30,13 @@ public class MessageServiceImpl implements MessageService {
 
     private final MessageRepository messageRepository;
     private final RoomService roomService;
+    private ObjectMapper objectMapper;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, RoomService roomService) {
+    public MessageServiceImpl(MessageRepository messageRepository, RoomService roomService, ObjectMapper objectMapper) {
         this.messageRepository = messageRepository;
         this.roomService = roomService;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -91,7 +93,6 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void sendMessageIntoSession(Message message, WebSocketSession session) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
         } catch (IOException e) {
