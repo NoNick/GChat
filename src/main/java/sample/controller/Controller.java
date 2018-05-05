@@ -7,9 +7,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import sample.Ranks;
 import sample.model.Message;
-import sample.model.Room;
 import sample.model.User;
+import sample.service.MessageService;
 import sample.service.MessagingService;
+import sample.service.RoomService;
+import sample.service.UserService;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -20,8 +22,20 @@ import java.util.Set;
 @RestController
 @RequestMapping("/")
 class Controller {
+
+    private final MessagingService messagingService;
+    private final MessageService messageService;
+    private final UserService userService;
+    private final RoomService roomService;
+
     @Autowired
-    private MessagingService messagingService;
+    public Controller(MessagingService messagingService, MessageService messageService, UserService userService, RoomService roomService) {
+        this.messagingService = messagingService;
+        this.messageService = messageService;
+        this.userService = userService;
+        this.roomService = roomService;
+    }
+
 
     @PostMapping(value = "/salute", produces = "application/json; charset=UTF-8")
     public @ResponseBody String echo(@RequestParam(name = "name") String name,
@@ -33,23 +47,14 @@ class Controller {
     }
 
     @PostMapping(value = "/pleaseGeneral", produces = "application/json; charset=UTF-8")
-    public @ResponseBody String getReceivedMessages(@RequestParam(name = "hash") String hash,
-                                       @RequestParam(name = "name") String name) {
+    public @ResponseBody
+    String getReceivedMessages() {
         return constructReceiversResponse(messagingService.getReceivers()).toJSONString();
     }
 
     @PostMapping(value = "/rooms", produces = "application/json; charset=UTF-8")
-    public @ResponseBody String getRooms(@RequestParam(name = "hash") String hash,
-                                       @RequestParam(name = "name") String name) {
-        return constructRoomsResponse(messagingService.getRoomMessagesNumber()).toJSONString();
-    }
-
-    private JSONObject constructRoomsResponse(Map<Room, Integer> numberByRoom) {
-        JSONObject result = new JSONObject();
-        numberByRoom.forEach((room, n) -> {
-            result.put(room.getName(), n);
-        });
-        return result;
+    public Map<String, Integer> getRooms() {
+        return roomService.getMessagesCountInAllRooms();
     }
 
     private JSONArray constructReceiversResponse(Map<Message, Set<User>> receivers) {

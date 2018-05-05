@@ -1,18 +1,24 @@
 package sample.configuration;
 
+import org.h2.tools.Server;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Configuration
 @EnableWebMvc
+@EnableJpaRepositories(basePackages = "sample.repository")
 @ComponentScan(basePackages = "sample")
 public class AppConfig extends WebMvcConfigurerAdapter {
     /**
@@ -35,6 +41,10 @@ public class AppConfig extends WebMvcConfigurerAdapter {
         return messageSource;
     }
 
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public Server h2WebConsoleServer() throws SQLException {
+        return Server.createWebServer("-web", "-webAllowOthers", "-webDaemon", "-webPort", "8082");
+    }
 
     @Override
     public void configurePathMatch(PathMatchConfigurer matcher) {

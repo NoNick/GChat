@@ -22,10 +22,8 @@ public class Message {
     @GeneratedValue
     private Long id;
     private String text;
-    @JsonFormat(pattern = "dd-MM-yyyy hh:mm")
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime created;
-    private String roomName;
-    private String userName;
     private boolean secret;
 
     @ManyToOne
@@ -42,8 +40,8 @@ public class Message {
         result.put("action", "message");
         result.put("text", text);
         result.put("created", created);
-        result.put("room", roomName);
-        result.put("author", userName);
+        result.put("room", getRoom().getName());
+        result.put("author", getUser().getName());
         result.put("secret", secret);
         return result;
     }

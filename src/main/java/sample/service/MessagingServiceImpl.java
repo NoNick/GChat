@@ -11,30 +11,23 @@ import sample.model.User;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class MessagingServiceImpl implements MessagingService {
+
     @PersistenceContext
     private EntityManager entityManager;
-
 
     private final Map<Room, Set<User>> usersByRoom = new HashMap<>();
     private final Map<Room, Set<Message>> messagesByRoom = new HashMap<>();
     private final Map<Message, Set<User>> receiversByMessage = new HashMap<>();
-
-    @Override
-    public Map<Room, Integer> getRoomMessagesNumber() {
-        Map<Room, Integer> numberByRoom = new HashMap<>();
-
-        entityManager.createQuery("from Room", Room.class).getResultList().forEach(room -> {
-            numberByRoom.put(room, room.getMessages().size());
-        });
-
-        return numberByRoom;
-    }
 
     @Override
     public Map<Message, Set<User>> getReceivers() {
@@ -116,25 +109,26 @@ public class MessagingServiceImpl implements MessagingService {
     }
 
     private Message constructMessage(User user, Room room, String text, boolean secret) {
-        Message result = new Message();
-        result.setText(text);
-        result.setSecret(secret);
-        result.setEpoch(System.currentTimeMillis());
-        result.setUser(user);
-        result.setRoom(room);
-        result.setEpoch(System.currentTimeMillis());
+        Message result = Message.builder()
+                .text(text)
+                .secret(secret)
+                .user(user)
+                .room(room)
+                .created(LocalDateTime.now())
+                .build();
         entityManager.persist(result);
         entityManager.flush(); // set id for the massage
         return result;
     }
 
     private Message constructSubscribedMessage(User user, Room room) {
-        Message result = new Message();
-        result.setUser(user);
-        result.setRoom(room);
-        result.setEpoch(System.currentTimeMillis() / 1000);
-        result.setSecret(false);
-        result.setText("User " + user.getName() + " subscribed to the room " + room.getName());
+        Message result = Message.builder()
+                .user(user)
+                .room(room)
+                .created(LocalDateTime.now())
+                .secret(false)
+                .text("User " + user.getName() + " subscribed to the room " + room.getName())
+                .build();
         entityManager.persist(result);
         entityManager.flush(); // set id for the massage
         return result;

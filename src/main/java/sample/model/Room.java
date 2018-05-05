@@ -1,5 +1,6 @@
 package sample.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +22,8 @@ public class Room {
     @Id
     private String name;
 
-    @OneToMany(mappedBy = "roomName")
+    @OneToMany(mappedBy = "room")
+    @JsonIgnore
     private Set<Message> messages;
 
 }

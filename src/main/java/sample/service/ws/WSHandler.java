@@ -1,39 +1,51 @@
-package sample.service;
+package sample.service.ws;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.socket.*;
 import sample.Ranks;
+import sample.dto.WSMessage;
 import sample.model.Room;
 import sample.model.User;
+import sample.service.MessagingService;
+import sample.service.RoomService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Component
-@Transactional
 public class WSHandler implements WebSocketHandler {
-    @PersistenceContext
-    EntityManager entityManager;
-    @Autowired
-    MessagingService messagingService;
 
     private final Map<User, WebSocketSession> sessionByUser = new HashMap<>();
 
+    @PersistenceContext
+    EntityManager entityManager;
+
+    private final MessagingService messagingService;
+    private final RoomService roomService;
+
+    @Autowired
+    public WSHandler(MessagingService messagingService, RoomService roomService) {
+        this.messagingService = messagingService;
+        this.roomService = roomService;
+    }
+
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        JSONObject messageJSON = (JSONObject) new JSONParser().parse(message.getPayload().toString());
-        String name = (String) messageJSON.get("name");
-        String hash = (String) messageJSON.get("hash");
-        String roomName = (String) messageJSON.get("room");
-        String messageText = (String) messageJSON.get("message");
-        Boolean secret = (Boolean) messageJSON.get("secret");
+        ObjectMapper objectMapper = new ObjectMapper();
+        WSMessage wsMessage = objectMapper.readValue(message.getPayload().toString(), WSMessage.class);
+
+        String name = wsMessage.getName();
+        String hash = wsMessage.getHash();
+        String roomName = wsMessage.getRoom();
+        String messageText = wsMessage.getMessage();
+        Boolean secret = wsMessage.isSecret();
         User user = getUser(name, hash);
         if (user == null) {
             session.sendMessage(new TextMessage("Unauthorized"));
@@ -50,7 +62,7 @@ public class WSHandler implements WebSocketHandler {
             }
         }
 
-        switch (messageJSON.get("action").toString()) {
+        switch (wsMessage.getAction()) {
             case "salute":
                 session.sendMessage(new TextMessage("Your rank is " + Ranks.getRankName(user.getRank())));
                 break;
