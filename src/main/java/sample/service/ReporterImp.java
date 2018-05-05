@@ -14,15 +14,17 @@ import java.util.Map;
 public class ReporterImp implements Reporter {
 
     private final MessageService messageService;
+    private final SubscriptionService subscriptionService;
 
     @Autowired
-    public ReporterImp(MessageService messageService) {
+    public ReporterImp(MessageService messageService, SubscriptionService subscriptionService) {
         this.messageService = messageService;
+        this.subscriptionService = subscriptionService;
     }
 
     @Override
     public void report(User user, Room room, String text, boolean secret, Map<User, WebSocketSession> sessionByUser) {
-        messageService.subscribeUser(room, user, sessionByUser);
+        subscriptionService.subscribeUser(room, user, sessionByUser);
 
         Message msg = constructMessage(user, room, text, secret);
         messageService.sendMessageToRoom(room, msg);

@@ -7,8 +7,6 @@ import sample.model.User;
 import sample.repository.UserRepository;
 import sample.service.UserService;
 
-import java.util.List;
-
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -17,12 +15,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
     }
 
     @Override
@@ -37,17 +29,4 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-    @Override
-    @Transactional
-    public User updateUser(User user) {
-        if (userRepository.exists(user.getName())) {
-            return userRepository.save(user);
-        } else return null;
-    }
-
-    @Override
-    @Transactional
-    public void deleteUser(String name) {
-        userRepository.delete(name);
-    }
 }

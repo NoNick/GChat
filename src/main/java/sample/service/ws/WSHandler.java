@@ -10,9 +10,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import sample.dto.WSMessage;
 import sample.model.Room;
 import sample.model.User;
-import sample.service.MessageService;
 import sample.service.Reporter;
 import sample.service.RoomService;
+import sample.service.SubscriptionService;
 import sample.service.UserService;
 import sample.utils.Ranks;
 
@@ -28,14 +28,14 @@ public class WSHandler extends TextWebSocketHandler {
     private final Map<User, WebSocketSession> sessionByUser = new HashMap<>();
 
     private final Reporter reporter;
-    private final MessageService messageService;
+    private final SubscriptionService subscriptionService;
     private final RoomService roomService;
     private final UserService userService;
 
     @Autowired
-    public WSHandler(Reporter reporter, MessageService messageService, RoomService roomService, UserService userService) {
+    public WSHandler(Reporter reporter, SubscriptionService subscriptionService, RoomService roomService, UserService userService) {
         this.reporter = reporter;
-        this.messageService = messageService;
+        this.subscriptionService = subscriptionService;
         this.roomService = roomService;
         this.userService = userService;
     }
@@ -69,7 +69,7 @@ public class WSHandler extends TextWebSocketHandler {
                 reporter.report(user, room, messageText, secret, sessionByUser);
                 break;
             case "subscribe":
-                messageService.subscribeUser(room, user, sessionByUser);
+                subscriptionService.subscribeUser(room, user, sessionByUser);
                 break;
         }
     }
