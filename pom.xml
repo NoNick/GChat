@@ -23,7 +23,7 @@
         <h2.connector.version>1.4.191</h2.connector.version>
         <json-simple.version>1.1</json-simple.version>
         <lombok.version>1.16.20</lombok.version>
-        <jackson-databind.version>2.9.3</jackson-databind.version>
+        <jackson.version>2.9.3</jackson.version>
     </properties>
 
     <repositories>
@@ -153,8 +153,13 @@
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson-databind.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Logging with SLF4J & LogBack -->
@@ -248,7 +253,7 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>0.7.9</version>
                     <configuration>
-                        <argLine>@{argLine}</argLine>
+                        <!--<argLine>@{argLine}</argLine>-->
                     </configuration>
                 </plugin>
             </plugins>

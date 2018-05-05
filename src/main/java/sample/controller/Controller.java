@@ -2,8 +2,6 @@ package sample.controller;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -25,7 +23,7 @@ class Controller {
     @Autowired
     private MessagingService messagingService;
 
-    @RequestMapping(value="/salute", method=RequestMethod.POST, produces = "application/json; charset=UTF-8")
+    @PostMapping(value = "/salute", produces = "application/json; charset=UTF-8")
     public @ResponseBody String echo(@RequestParam(name = "name") String name,
                                      @RequestParam(name = "hash") String hash)
             throws UnsupportedEncodingException, NoSuchAlgorithmException {
@@ -34,13 +32,13 @@ class Controller {
         return result[0];
     }
 
-    @RequestMapping(value="/pleaseGeneral", method=RequestMethod.POST, produces = "application/json; charset=UTF-8")
+    @PostMapping(value = "/pleaseGeneral", produces = "application/json; charset=UTF-8")
     public @ResponseBody String getReceivedMessages(@RequestParam(name = "hash") String hash,
                                        @RequestParam(name = "name") String name) {
         return constructReceiversResponse(messagingService.getReceivers()).toJSONString();
     }
 
-    @RequestMapping(value="/rooms", method=RequestMethod.POST, produces = "application/json; charset=UTF-8")
+    @PostMapping(value = "/rooms", produces = "application/json; charset=UTF-8")
     public @ResponseBody String getRooms(@RequestParam(name = "hash") String hash,
                                        @RequestParam(name = "name") String name) {
         return constructRoomsResponse(messagingService.getRoomMessagesNumber()).toJSONString();
