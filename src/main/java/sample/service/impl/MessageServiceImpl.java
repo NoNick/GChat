@@ -11,12 +11,12 @@ import sample.model.Room;
 import sample.model.User;
 import sample.repository.MessageRepository;
 import sample.service.MessageService;
+import sample.service.RoomService;
 import sample.utils.SimpleValidator;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,27 +26,15 @@ import java.util.stream.Collectors;
 public class MessageServiceImpl implements MessageService {
 
     private Map<Room, Set<User>> usersByRoom = new ConcurrentHashMap<>();
-    private Map<Room, Set<Message>> messagesByRoom = new ConcurrentHashMap<>();
     private Map<Message, Set<User>> receiversByMessage = new ConcurrentHashMap<>();
 
     private final MessageRepository messageRepository;
+    private final RoomService roomService;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository) {
+    public MessageServiceImpl(MessageRepository messageRepository, RoomService roomService) {
         this.messageRepository = messageRepository;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Message> getAllMessages() {
-        return messageRepository.findAll();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Message> getMessagesByUser(User user) {
-        SimpleValidator.validateObject(user, "User must not be null");
-        return messageRepository.findAllByUser(user);
+        this.roomService = roomService;
     }
 
     @Override
@@ -58,51 +46,22 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Message> getAllMessagesInRoom(Room room) {
-        SimpleValidator.validateObject(room, "Room must not be null");
-        return messageRepository.findAllByRoom(room);
-    }
-
-    @Override
-    @Transactional
-    public void subscribeUser(Room room, User user, Map<User, WebSocketSession> sessionByUser) {
-
-        Set<User> users = usersByRoom.computeIfAbsent(room, k -> new HashSet<>());
-
-        if (usersByRoom.get(room).contains(user)) {
-            return;
-        }
-        users.add(user);
-
-        Message message = constructSubscribedMessage(user, room);
-
-        sendMessageToSubscribers(message, sessionByUser);
-        sendMessageToRoom(room, message);
-    }
-
-    private Message constructSubscribedMessage(User user, Room room) {
-        Message result = Message.builder()
-                .user(user)
-                .room(room)
-                .created(LocalDateTime.now())
-                .secret(false)
-                .text("User " + user.getName() + " subscribed to the room " + room.getName())
-                .build();
-        return createMessage(result);
-    }
-
-    @Override
     public Map<Message, Set<User>> getReceivers() {
         return receiversByMessage;
     }
 
     @Override
+    public Map<Room, Set<User>> getUsersByRoom() {
+        return usersByRoom;
+    }
+
+    @Override
+    @Transactional
     public void sendMessageToRoom(Room room, Message message) {
 
-        Set<Message> messagesInRoom = messagesByRoom.computeIfAbsent(room, k -> new HashSet<>());
+        Room createdRoom = roomService.findOrCreateRoom(room.getName());
 
-        messagesInRoom.add(message);
+        createdRoom.getMessages().add(message);
 
         Set<User> receivers;
         if (message.isSecret()) {

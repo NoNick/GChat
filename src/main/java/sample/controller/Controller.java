@@ -31,10 +31,10 @@ class Controller {
         this.messageService = messageService;
         this.roomService = roomService;
     }
+
     @PostMapping(value = "/salute", produces = "application/json; charset=UTF-8")
     public @ResponseBody
-    String echo(@RequestParam(name = "name") String name,
-                @RequestParam(name = "hash") String hash)
+    String echo(@RequestParam(name = "name") String name, @RequestParam(name = "hash") String hash)
             throws UnsupportedEncodingException, NoSuchAlgorithmException {
         final String[] result = new String[]{"Unauthorized"};
         Ranks.getRank(name, hash).ifPresent(rank -> result[0] = "You are " + Ranks.getRankName(rank));
@@ -52,17 +52,6 @@ class Controller {
     }
 
     private List<Receiver> constructReceiversResponse(Map<Message, Set<User>> receivers) {
-//        JSONArray result = new JSONArray();
-//        receivers.forEach((message, users) -> {
-//            JSONArray userNames = new JSONArray();
-//            users.stream().map(User::getName).forEach(userNames::add);
-//
-//            JSONObject msgInfo = new JSONObject();
-//            msgInfo.put("id", message.getId());
-//            msgInfo.put("recipients", userNames);
-//            result.add(msgInfo);
-//        });
-
         List<Receiver> receiversList = new ArrayList<>();
 
         receivers.forEach((message, users) -> {
