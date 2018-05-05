@@ -52,7 +52,7 @@ public class WSHandler extends TextWebSocketHandler {
         String messageText = wsMessage.getMessage();
         Boolean secret = wsMessage.isSecret();
 
-        User user = getUser(name, hash);
+        User user = getValidUser(name, hash);
         if (user == null) {
             session.sendMessage(new TextMessage("Unauthorized"));
             return;
@@ -67,6 +67,7 @@ public class WSHandler extends TextWebSocketHandler {
                 break;
             case "report":
                 reporter.report(user, room, messageText, secret, sessionByUser);
+//                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(report)));
                 break;
             case "subscribe":
                 subscriptionService.subscribeUser(room, user, sessionByUser);
@@ -74,7 +75,7 @@ public class WSHandler extends TextWebSocketHandler {
         }
     }
 
-    private User getUser(String name, String hash) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    private User getValidUser(String name, String hash) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         User user = userService.getUserByName(name);
 
         Optional<Integer> maybeRank = Ranks.getRank(name, hash);

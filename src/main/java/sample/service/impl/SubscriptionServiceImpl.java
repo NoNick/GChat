@@ -33,15 +33,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         Set<User> users = usersByRoom.computeIfAbsent(room, k -> new HashSet<>());
 
-        if (usersByRoom.get(room).contains(user)) {
-            return;
+        if (!usersByRoom.get(room).contains(user)) {
+            users.add(user);
+
+            Message message = constructSubscribedMessage(user, room);
+
+            messageService.sendMessageToSubscribers(message, sessionByUser);
+            messageService.sendMessageToRoom(room, message);
         }
-        users.add(user);
-
-        Message message = constructSubscribedMessage(user, room);
-
-        messageService.sendMessageToSubscribers(message, sessionByUser);
-        messageService.sendMessageToRoom(room, message);
     }
 
     private Message constructSubscribedMessage(User user, Room room) {

@@ -3,10 +3,7 @@ package sample.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
@@ -23,5 +20,8 @@ public class Room {
     @OneToMany(mappedBy = "room")
     @JsonIgnore
     private Set<Message> messages;
+
+    @ManyToMany
+    private Set<User> users;
 
 }

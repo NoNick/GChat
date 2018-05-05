@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -25,5 +26,8 @@ public class User {
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Message> messages;
+
+    @ManyToMany
+    private Set<Room> userRooms;
 
 }
