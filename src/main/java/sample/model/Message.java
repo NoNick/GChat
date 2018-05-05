@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.json.simple.JSONObject;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -33,17 +32,5 @@ public class Message {
     @ManyToOne
     @JsonIgnore
     private Room room;
-
-
-    public JSONObject toJSON() {
-        JSONObject result = new JSONObject();
-        result.put("action", "message");
-        result.put("text", text);
-        result.put("created", created);
-        result.put("room", getRoom().getName());
-        result.put("author", getUser().getName());
-        result.put("secret", secret);
-        return result;
-    }
 
 }
