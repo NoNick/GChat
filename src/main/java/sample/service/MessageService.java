@@ -1,26 +1,26 @@
 package sample.service;
 
-import org.springframework.web.socket.WebSocketSession;
-import sample.dto.Receiver;
 import sample.model.Message;
 import sample.model.Room;
 import sample.model.User;
 
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public interface MessageService {
+
+    List<Message> getAllMessages();
+
+    List<Message> getMessagesByUser(User user);
+
+    Message getMessageById(Long id);
 
     Message createMessage(Message message);
 
     Message updateMessage(Message message);
 
-    List<Receiver> getReceivers();
+    void deleteMessageById(Long id);
 
-    void sendMessage(Room room, Message message, Map<UUID, WebSocketSession> sessionByUUID);
+    List<Message> getAllMessagesInRoom(Room room);
 
-    void showMessagesForUserInRoom(User user, Room room, Map<UUID, WebSocketSession> sessionByUUID);
-
-    String salute(String name, String hash);
+    Message sendMessage(Message message, Room room);
 }

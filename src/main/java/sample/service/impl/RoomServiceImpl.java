@@ -4,11 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sample.model.Room;
-import sample.model.User;
 import sample.repository.RoomRepository;
-import sample.repository.UserRepository;
 import sample.service.RoomService;
-import sample.utils.validation.GCValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -18,19 +15,16 @@ import java.util.stream.Collectors;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
-    private final UserRepository userRepository;
 
     @Autowired
-    public RoomServiceImpl(RoomRepository roomRepository, UserRepository userRepository) {
+    public RoomServiceImpl(RoomRepository roomRepository) {
         this.roomRepository = roomRepository;
-        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Map<String, Integer> getMessagesCountInAllRooms() {
-        List<Room> all = roomRepository.findAll();
-        return all
+        return roomRepository.findAll()
                 .stream()
                 .collect(Collectors.toMap(
                         Room::getName,
@@ -40,39 +34,39 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Room> getAllRooms() {
+        return roomRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Room getRoomByName(String roomName) {
-        GCValidator.validateObject(roomName);
         return roomRepository.findOne(roomName);
     }
 
     @Override
     @Transactional
-    public Room findOrCreateRoom(String roomName) {
-        GCValidator.validateObject(roomName);
-
-        if (roomRepository.exists(roomName)) {
-            return getRoomByName(roomName);
-        }
-
-        Room room = Room.builder().name(roomName).build();
+    public Room createRoom(Room room) {
         return roomRepository.save(room);
     }
 
     @Override
     @Transactional
-    public void setUserToRoom(User user, Room room) {
-        GCValidator.validateObject(user);
-        GCValidator.validateObject(room);
-
-        Room roomFromDB = roomRepository.findOne(room.getName());
-        User userFromDB = userRepository.findOne(user.getName());
-
-        roomFromDB.getUsers().add(userFromDB);
-        userFromDB.getUserRooms().add(roomFromDB);
-
-        roomRepository.save(roomFromDB);
-        userRepository.save(userFromDB);
-
+    public Room updatRoom(Room room) {
+        if (roomRepository.exists(room.getName())) {
+            return roomRepository.save(room);
+        } else return null;
     }
 
+    @Override
+    @Transactional
+    public void deleteRoom(String name) {
+        roomRepository.delete(name);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean exists(Room room) {
+        return room != null && roomRepository.exists(room.getName());
+    }
 }

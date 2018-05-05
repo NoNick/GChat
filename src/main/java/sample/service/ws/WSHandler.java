@@ -2,51 +2,43 @@ package sample.service.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.*;
+import sample.Ranks;
 import sample.dto.WSMessage;
-import sample.model.Message;
 import sample.model.Room;
 import sample.model.User;
-import sample.service.*;
-import sample.utils.Ranks;
+import sample.service.MessagingService;
+import sample.service.RoomService;
 
-import java.io.IOException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 
-@Controller
-public class WSHandler extends TextWebSocketHandler {
+@Component
+public class WSHandler implements WebSocketHandler {
 
-    private final Map<UUID, WebSocketSession> sessionByUUID = new ConcurrentHashMap<>();
+    private final Map<User, WebSocketSession> sessionByUser = new HashMap<>();
 
-    private final SubscriptionService subscriptionService;
+    @PersistenceContext
+    EntityManager entityManager;
+
+    private final MessagingService messagingService;
     private final RoomService roomService;
-    private final UserService userService;
-    private final UserValidation userValidation;
-    private final MessageService messageService;
 
     @Autowired
-    public WSHandler(SubscriptionService subscriptionService,
-                     RoomService roomService,
-                     UserService userService,
-                     UserValidation userValidation,
-                     MessageService messageService) {
-        this.subscriptionService = subscriptionService;
+    public WSHandler(MessagingService messagingService, RoomService roomService) {
+        this.messagingService = messagingService;
         this.roomService = roomService;
-        this.userService = userService;
-        this.userValidation = userValidation;
-        this.messageService = messageService;
     }
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
-
         WSMessage wsMessage = objectMapper.readValue(message.getPayload().toString(), WSMessage.class);
 
         String name = wsMessage.getName();
@@ -54,43 +46,62 @@ public class WSHandler extends TextWebSocketHandler {
         String roomName = wsMessage.getRoom();
         String messageText = wsMessage.getMessage();
         Boolean secret = wsMessage.isSecret();
-
-        User user = userValidation.getValidUser(name, hash);
+        User user = getUser(name, hash);
         if (user == null) {
             session.sendMessage(new TextMessage("Unauthorized"));
             return;
         }
-
-        sessionByUUID.put(user.getUuid(), session);
-        Room room = roomService.findOrCreateRoom(roomName);
+        sessionByUser.put(user, session);
+        Room room = null;
+        if (roomName != null) {
+            room = entityManager.find(Room.class, roomName);
+            if (room == null) {
+                room = new Room();
+                room.setName(roomName);
+                entityManager.persist(room);
+            }
+        }
 
         switch (wsMessage.getAction()) {
             case "salute":
-                echo(session, user);
+                session.sendMessage(new TextMessage("Your rank is " + Ranks.getRankName(user.getRank())));
                 break;
             case "report":
-                if (!userService.containsUserInRoom(user, room)) {
-                    subscriptionService.subscribeUser(room, user, sessionByUUID);
-                }
-                report(messageText, secret, user, room);
+                messagingService.report(user, room, messageText, secret, sessionByUser);
                 break;
             case "subscribe":
-                subscriptionService.subscribeUser(room, user, sessionByUUID);
-                break;
-            case "look":
-                messageService.showMessagesForUserInRoom(user, room, sessionByUUID);
+                messagingService.subscribeUser(room, user, sessionByUser);
                 break;
         }
     }
 
-    private void report(String messageText, Boolean secret, User user, Room room) {
-        Message msg = MessageConstructor.constructMessage(user, room, messageText, secret);
-        messageService.sendMessage(room, msg, sessionByUUID);
+    private User getUser(String name, String hash) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        User user = entityManager.find(User.class, name);
+        Optional<Integer> maybeRank = Ranks.getRank(name, hash);
+        if (!maybeRank.isPresent()) {
+            return null;
+        }
+        if (user == null) {
+            user = new User();
+            user.setName(name);
+            user.setRank(maybeRank.get());
+            entityManager.persist(user);
+        }
+        return user;
     }
 
-    private void echo(WebSocketSession session, User user) throws IOException {
-        session.sendMessage(new TextMessage("Your rank is " + Ranks.getRankName(user.getRank())));
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {}
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {}
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {}
+
+    @Override
+    public boolean supportsPartialMessages() {
+        return false;
     }
-
-
 }

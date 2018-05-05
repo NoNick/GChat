@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface MessagingService {
-    Map<Room, Integer> getRoomMessagesNumber();
+//    Map<Room, Integer> getRoomMessagesNumber();
 
     Map<Message, Set<User>> getReceivers();
 

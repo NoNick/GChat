@@ -23,7 +23,7 @@ public class User {
     private Integer rank;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "userName")
+    @OneToMany(mappedBy = "user")
     private List<Message> messages;
 
 }
