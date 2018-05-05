@@ -6,8 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import sample.model.Room;
 import sample.repository.RoomRepository;
 import sample.service.RoomService;
+import sample.utils.SimpleValidator;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -34,39 +34,22 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Room> getAllRooms() {
-        return roomRepository.findAll();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Room getRoomByName(String roomName) {
+        SimpleValidator.validateObject(roomName, "Name must not be null");
         return roomRepository.findOne(roomName);
     }
 
     @Override
     @Transactional
-    public Room createRoom(Room room) {
+    public Room findOrCreateRoom(String roomName) {
+        SimpleValidator.validateObject(roomName, "Room name must not be null");
+
+        if (roomRepository.exists(roomName)) {
+            return getRoomByName(roomName);
+        }
+
+        Room room = Room.builder().name(roomName).build();
         return roomRepository.save(room);
     }
 
-    @Override
-    @Transactional
-    public Room updatRoom(Room room) {
-        if (roomRepository.exists(room.getName())) {
-            return roomRepository.save(room);
-        } else return null;
-    }
-
-    @Override
-    @Transactional
-    public void deleteRoom(String name) {
-        roomRepository.delete(name);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean exists(Room room) {
-        return room != null && roomRepository.exists(room.getName());
-    }
 }

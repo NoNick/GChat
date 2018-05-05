@@ -1,31 +1,40 @@
 package sample.service.impl;
 
-import org.hibernate.ObjectNotFoundException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 import sample.model.Message;
 import sample.model.Room;
 import sample.model.User;
 import sample.repository.MessageRepository;
 import sample.service.MessageService;
-import sample.service.RoomService;
+import sample.utils.SimpleValidator;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageServiceImpl implements MessageService {
 
+    private Map<Room, Set<User>> usersByRoom = new ConcurrentHashMap<>();
+    private Map<Room, Set<Message>> messagesByRoom = new ConcurrentHashMap<>();
+    private Map<Message, Set<User>> receiversByMessage = new ConcurrentHashMap<>();
+
     private final MessageRepository messageRepository;
-    private final RoomService roomService;
 
     @Autowired
-    public MessageServiceImpl(MessageRepository messageRepository, RoomService roomService) {
+    public MessageServiceImpl(MessageRepository messageRepository) {
         this.messageRepository = messageRepository;
-        this.roomService = roomService;
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -36,67 +45,98 @@ public class MessageServiceImpl implements MessageService {
     @Override
     @Transactional(readOnly = true)
     public List<Message> getMessagesByUser(User user) {
-        validateObject(user, "User must not be null");
+        SimpleValidator.validateObject(user, "User must not be null");
         return messageRepository.findAllByUser(user);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Message getMessageById(Long id) {
-        return messageRepository.findOne(id);
     }
 
     @Override
     @Transactional
     public Message createMessage(Message message) {
-        validateObject(message, "Message must not be null");
+        SimpleValidator.validateObject(message, "Message must not be null");
         message.setCreated(LocalDateTime.now());
         return messageRepository.save(message);
     }
 
     @Override
-    @Transactional
-    public Message updateMessage(Message message) {
-        validateObject(message, "Message must not be null");
-        if (!messageRepository.exists(message.getId())) {
-            throw new ObjectNotFoundException(message.getId(), "Message");
-        }
-        return messageRepository.save(message);
-    }
-
-    @Override
-    @Transactional
-    public void deleteMessageById(Long id) {
-        if (!messageRepository.exists(id)) {
-            throw new ObjectNotFoundException(id, "Message");
-        }
-        messageRepository.delete(id);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<Message> getAllMessagesInRoom(Room room) {
-        validateObject(room, "Room must not be null");
+        SimpleValidator.validateObject(room, "Room must not be null");
         return messageRepository.findAllByRoom(room);
     }
 
     @Override
     @Transactional
-    public Message sendMessage(Message message, Room room) {
-        validateObject(message, "Message must not be null");
-        validateObject(room, "Room must not be null");
-        if (!roomService.exists(room)) {
-            roomService.createRoom(room);
-        }
-        message.setRoom(room);
-        room.getMessages().add(message);
+    public void subscribeUser(Room room, User user, Map<User, WebSocketSession> sessionByUser) {
 
-        return createMessage(message);
+        Set<User> users = usersByRoom.computeIfAbsent(room, k -> new HashSet<>());
+
+        if (usersByRoom.get(room).contains(user)) {
+            return;
+        }
+        users.add(user);
+
+        Message message = constructSubscribedMessage(user, room);
+
+        sendMessageToSubscribers(message, sessionByUser);
+        sendMessageToRoom(room, message);
     }
 
-    private void validateObject(Object object, String msg) {
-        if (object == null) {
-            throw new IllegalArgumentException(msg);
+    private Message constructSubscribedMessage(User user, Room room) {
+        Message result = Message.builder()
+                .user(user)
+                .room(room)
+                .created(LocalDateTime.now())
+                .secret(false)
+                .text("User " + user.getName() + " subscribed to the room " + room.getName())
+                .build();
+        return createMessage(result);
+    }
+
+    @Override
+    public Map<Message, Set<User>> getReceivers() {
+        return receiversByMessage;
+    }
+
+    @Override
+    public void sendMessageToRoom(Room room, Message message) {
+
+        Set<Message> messagesInRoom = messagesByRoom.computeIfAbsent(room, k -> new HashSet<>());
+
+        messagesInRoom.add(message);
+
+        Set<User> receivers;
+        if (message.isSecret()) {
+            receivers = usersByRoom.get(room)
+                    .stream()
+                    .filter(user -> user.getRank() >= message.getUser().getRank())
+                    .collect(Collectors.toSet());
+        } else {
+            receivers = new HashSet<>(usersByRoom.get(room));
+        }
+        receiversByMessage.put(message, receivers);
+    }
+
+    @Override
+    public void sendMessageToSubscribers(Message message, Map<User, WebSocketSession> sessionByUser) {
+        usersByRoom.get(message.getRoom())
+                .forEach(user -> {
+                    if (message.isSecret() && user.getRank() < message.getUser().getRank()) {
+                        return;
+                    }
+
+                    WebSocketSession session = sessionByUser.get(user);
+                    if (session != null && session.isOpen()) {
+                        sendMessageIntoSession(message, session);
+                    }
+                });
+    }
+
+    private void sendMessageIntoSession(Message message, WebSocketSession session) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(message)));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
