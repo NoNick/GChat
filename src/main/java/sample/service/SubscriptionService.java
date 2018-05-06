@@ -5,8 +5,9 @@ import sample.model.Room;
 import sample.model.User;
 
 import java.util.Map;
+import java.util.UUID;
 
 public interface SubscriptionService {
 
-    void subscribeUser(Room room, User user, Map<User, WebSocketSession> sessionByUser);
+    void subscribeUser(Room room, User user, Map<UUID, WebSocketSession> sessionByUser);
 }

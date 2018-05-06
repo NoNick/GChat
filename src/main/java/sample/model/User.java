@@ -1,25 +1,26 @@
 package sample.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
+@EqualsAndHashCode(exclude = "userRooms")
+@ToString(exclude = {"userRooms", "messages"})
+@Table(name = "user")
 public class User {
-
     @Id
     private String name;
+    private UUID uuid;
     @Column
     private Integer rank;
 
@@ -27,7 +28,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Message> messages;
 
-    @ManyToMany
-    private Set<Room> userRooms;
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Room> userRooms = Collections.emptySet();
 
 }

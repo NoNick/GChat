@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {AppConfig.class, AppInitializer.class, HibernateConfiguration.class})
 public class ControllerTest {
+
     @Autowired
     private WebApplicationContext context;
     @Autowired

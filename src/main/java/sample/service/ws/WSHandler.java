@@ -8,36 +8,39 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import sample.dto.WSMessage;
+import sample.model.Message;
 import sample.model.Room;
 import sample.model.User;
-import sample.service.Reporter;
-import sample.service.RoomService;
-import sample.service.SubscriptionService;
-import sample.service.UserService;
+import sample.service.*;
 import sample.utils.Ranks;
 
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class WSHandler extends TextWebSocketHandler {
 
-    private final Map<User, WebSocketSession> sessionByUser = new HashMap<>();
+    private final Map<UUID, WebSocketSession> sessionByUUID = new ConcurrentHashMap<>();
 
-    private final Reporter reporter;
     private final SubscriptionService subscriptionService;
     private final RoomService roomService;
     private final UserService userService;
+    private final UserValidation userValidation;
+    private final MessageService messageService;
 
     @Autowired
-    public WSHandler(Reporter reporter, SubscriptionService subscriptionService, RoomService roomService, UserService userService) {
-        this.reporter = reporter;
+    public WSHandler(SubscriptionService subscriptionService,
+                     RoomService roomService,
+                     UserService userService,
+                     UserValidation userValidation,
+                     MessageService messageService) {
         this.subscriptionService = subscriptionService;
         this.roomService = roomService;
         this.userService = userService;
+        this.userValidation = userValidation;
+        this.messageService = messageService;
     }
 
     @Override
@@ -52,43 +55,40 @@ public class WSHandler extends TextWebSocketHandler {
         String messageText = wsMessage.getMessage();
         Boolean secret = wsMessage.isSecret();
 
-        User user = getValidUser(name, hash);
+        User user = userValidation.getValidUser(name, hash);
         if (user == null) {
             session.sendMessage(new TextMessage("Unauthorized"));
             return;
         }
 
-        sessionByUser.put(user, session);
+        sessionByUUID.put(user.getUuid(), session);
         Room room = roomService.findOrCreateRoom(roomName);
 
         switch (wsMessage.getAction()) {
             case "salute":
-                session.sendMessage(new TextMessage("Your rank is " + Ranks.getRankName(user.getRank())));
+                echo(session, user);
                 break;
             case "report":
-                reporter.report(user, room, messageText, secret, sessionByUser);
-//                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(report)));
+                if (!userService.containsUserInRoom(user, room)) {
+                    subscriptionService.subscribeUser(room, user, sessionByUUID);
+                }
+                report(messageText, secret, user, room);
                 break;
             case "subscribe":
-                subscriptionService.subscribeUser(room, user, sessionByUser);
+                subscriptionService.subscribeUser(room, user, sessionByUUID);
                 break;
         }
     }
 
-    private User getValidUser(String name, String hash) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-        User user = userService.getUserByName(name);
-
-        Optional<Integer> maybeRank = Ranks.getRank(name, hash);
-        if (!maybeRank.isPresent()) {
-            return null;
-        }
-        if (user == null) {
-            user = User.builder()
-                    .name(name)
-                    .rank(maybeRank.get())
-                    .build();
-            userService.createUser(user);
-        }
-        return user;
+    private void report(String messageText, Boolean secret, User user, Room room) {
+        Message msg = MessageConstructor.constructMessage(user, room, messageText, secret);
+        messageService.createMessage(msg);
+        messageService.sendMessageToSubscribers(msg, sessionByUUID);
     }
+
+    private void echo(WebSocketSession session, User user) throws IOException {
+        session.sendMessage(new TextMessage("Your rank is " + Ranks.getRankName(user.getRank())));
+    }
+
+
 }

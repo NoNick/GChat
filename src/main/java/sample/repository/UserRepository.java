@@ -6,9 +6,12 @@ import sample.model.Room;
 import sample.model.User;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
 
-    Set<User> findAllByUserRoomsContains(Room room);
+    Set<User> findAllByUserRoomsContaining(Room room);
+
+    boolean existsByUuid(UUID uuid);
 }
