@@ -12,4 +12,6 @@ public interface UserService {
     User createUser(User user);
 
     Set<User> getAllUsersInRoom(Room room);
+
+    boolean containsUserInRoom(User user, Room room);
 }

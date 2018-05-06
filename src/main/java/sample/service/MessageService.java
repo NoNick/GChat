@@ -1,24 +1,20 @@
 package sample.service;
 
 import org.springframework.web.socket.WebSocketSession;
+import sample.dto.Receiver;
 import sample.model.Message;
-import sample.model.Room;
-import sample.model.User;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
 public interface MessageService {
 
     Message createMessage(Message message);
 
-    Map<Message, Set<User>> getReceivers();
+    List<Receiver> getReceivers();
 
-    Map<Room, Set<User>> getUsersByRoom();
-
-    void sendMessageToRoom(Room room, Message message);
-
-    void sendMessageToSubscribers(Message message, Map<User, WebSocketSession> sessionByUser);
+    void sendMessageToSubscribers(Message message, Map<UUID, WebSocketSession> sessionByUser);
 
 
 }

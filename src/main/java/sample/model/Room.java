@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Set;
 
 @Entity
@@ -11,7 +12,8 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = "messages")
+@EqualsAndHashCode(exclude = {"messages", "users"})
+@ToString(exclude = {"messages", "users"})
 @Table(name = "rooms")
 public class Room {
     @Id
@@ -21,7 +23,8 @@ public class Room {
     @JsonIgnore
     private Set<Message> messages;
 
-    @ManyToMany
-    private Set<User> users;
+    @ManyToMany(mappedBy = "userRooms")
+    @JsonIgnore
+    private Set<User> users = Collections.emptySet();
 
 }
