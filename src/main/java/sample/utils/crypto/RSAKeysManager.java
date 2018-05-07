@@ -24,12 +24,6 @@ import java.util.Map;
 
 @Slf4j
 public class RSAKeysManager {
-
-    //CHANGE TO YOUR PROJECT DIRECTORY
-    private static final String KEYSTORE_FOLDER_NAME = "keystore\\";
-    private static final String GLOBAL_KEY_STORAGE_PATH = "C:\\Users\\evgenii_vanchugov\\IdeaProjects\\GChat\\" + KEYSTORE_FOLDER_NAME;
-    private static final String KEYSTORE_PATH = KEYSTORE_FOLDER_NAME + "keystore.ks";
-
     private static final String SECRET_KEY_SUFFIX = "_SECRET_KEY";
     private static final char[] KEY_STORE_PASSWORD = "5b+ixDGsTePTX8Ff0ONXtg==".toCharArray(); //KeyStorePassword
 
@@ -53,6 +47,14 @@ public class RSAKeysManager {
             put(RANKS[3], RANKS_ENUMS[3]);
         }
     };
+
+    private static String GLOBAL_KEY_STORAGE_PATH;
+    private static String KEYSTORE_PATH;
+
+    RSAKeysManager(String globalKeyStoragePath, String keystorePath) {
+        GLOBAL_KEY_STORAGE_PATH = globalKeyStoragePath;
+        KEYSTORE_PATH = keystorePath;
+    }
 
     public static RSAPublicKey getPublicKeyWithRank(Integer rank) {
         RanksEnum rankName = RANK_NAME_BY_RANK_INT.get(rank);
@@ -114,7 +116,7 @@ public class RSAKeysManager {
         }
     }
 
-    static void generateKeyStore() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+    void generateKeyStore() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
 
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
 
