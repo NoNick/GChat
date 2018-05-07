@@ -21,6 +21,7 @@ Unfortunately, the General is not tech savvy enough, so he didn’t understand a
 **Motherland counts on you, comrade!**
 
 **Steps to run the application:**
+- Before running application you must generate KeyStore and PublicKeys for each rank. Open **KeyStoreGenrator** class and **change path to your project!!!!!**. Then run main() and do next steps. 
 - Setup tomcat
 - Build application via maven (clean compile package, optionally skip tests).
 - Deploy the .war archive
@@ -29,12 +30,14 @@ Unfortunately, the General is not tech savvy enough, so he didn’t understand a
 - Send packages (“Console” tab) like this: `socket.send('{"action":"subscribe", "name": "Simon", "hash": "E+pl1T31nObs76mdbZORgQ==", "room": "room0"}');`
 - Responses from the server are available as websocket frames in “Network” tab of the developer console.
 
+I recomend you to use **Smart Websocket Client** extension for Chrome. 
+
 **Example of communication:**
 
-`<Tab 1>: var socket = new WebSocket("ws://localhost:8080/template/WebSocket");`
+`<Tab 1>: var socket = new WebSocket("ws://localhost:8080/WebSocket");`
 
 `<Tab 1>: socket.send('{"action":"subscribe", "name": "Simon", "hash": "E+pl1T31nObs76mdbZORgQ==", "room": "room0"}');`
 
-`<Tab 2>: var socket = new WebSocket("ws://localhost:8080/template/WebSocket");`
+`<Tab 2>: var socket = new WebSocket("ws://localhost:8080/WebSocket");`
 
 `<Tab 2>: socket.send('{"action":"report", "name": "Peter", "hash": "iHDxWFurtv+PN6akU31KqQ==", "secret": false, "message": "text", "room": "room0"}');`
