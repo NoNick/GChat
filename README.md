@@ -37,4 +37,4 @@ Unfortunately, the General is not tech savvy enough, so he didn’t understand a
 
 `<Tab 2>: var socket = new WebSocket("ws://localhost:8080/template/WebSocket");`
 
-`<Tab 2>: socket.send('{"action":"report", "name": "Peter", "hash": "iHDxWFurtv+PN6akU31KqQ==", "secret": false, "message": "text", "room": "room0"}');`
+`<Tab 2>: socket.send('{"action":"report", "name": "Peter", "hash": "iHDxWFurtv+PN6akU31KqQ==", "secret": false, "message": "textBytes", "room": "room0"}');`

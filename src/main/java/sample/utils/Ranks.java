@@ -1,11 +1,8 @@
-package sample;
+package sample.utils;
 
-import org.apache.commons.codec.binary.Base64;
-
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
+
+import static sample.utils.crypto.MD5Hashing.getMD5;
 
 public class Ranks {
     public static final int SOLDIER_RANK = 1;
@@ -32,8 +29,7 @@ public class Ranks {
         }
     }
 
-    public static Optional<Integer> getRank(String name, String hash)
-            throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    public static Optional<Integer> getRank(String name, String hash) {
         if (getMD5(name + SOLDIER_KEY).equals(hash)) {
             return Optional.of(SOLDIER_RANK);
         } else if (getMD5(name + SERGEANT_KEY).equals(hash)) {
@@ -45,13 +41,5 @@ public class Ranks {
         } else {
             return Optional.empty();
         }
-    }
-
-    private static String getMD5(String x) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        byte[] bytesOfMessage = x.getBytes("UTF-8");
-
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        byte[] thedigest = md.digest(bytesOfMessage);
-        return new String(Base64.encodeBase64(thedigest));
     }
 }

@@ -1,13 +1,13 @@
 package sample.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
-import sample.service.WSHandler;
+import sample.service.ws.WSHandler;
 
 /**
  * Created by delf.
@@ -15,9 +15,18 @@ import sample.service.WSHandler;
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
+
+    private final WSHandler webSocketHandler;
+
+    @Autowired
+    public WebSocketConfig(WSHandler webSocketHandler) {
+        this.webSocketHandler = webSocketHandler;
+    }
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(webSocketHandler(), "/WebSocket").setAllowedOrigins("*");
+        registry.addHandler(webSocketHandler, "/WebSocket").setAllowedOrigins("*");
+//                .setHandshakeHandler();
     }
 
     @Bean
@@ -30,8 +39,4 @@ public class WebSocketConfig implements WebSocketConfigurer {
         return container;
     }
 
-    @Bean
-    public WebSocketHandler webSocketHandler() {
-        return new WSHandler();
-    }
 }

@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -26,16 +25,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.junit.Assert.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebAppConfiguration
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {AppConfig.class, AppInitializer.class, HibernateConfiguration.class})
 public class ControllerTest {
+
     @Autowired
     private WebApplicationContext context;
-    @Autowired @Qualifier("webSocketHandler")
+    @Autowired
     private WebSocketHandler handler;
 
     private MockMvc mvc;

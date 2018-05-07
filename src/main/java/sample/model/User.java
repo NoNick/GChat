@@ -1,54 +1,40 @@
 package sample.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(exclude = "userRooms")
+@ToString(exclude = {"userRooms", "messages"})
+@Table(name = "user")
 public class User {
     @Id
+    @NotNull
+    @NotEmpty
     private String name;
+    private UUID uuid;
+
     @Column
-    private int rank;
+    @NotNull
+    private Integer rank;
 
-    public String getName() {
-        return name;
-    }
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private Set<Message> messages;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Room> userRooms = Collections.emptySet();
 
-    public int getRank() {
-        return rank;
-    }
-
-    public void setRank(int rank) {
-        this.rank = rank;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        User user = (User) o;
-
-        if (rank != user.rank) return false;
-        return name.equals(user.name);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + rank;
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "name='" + name + '\'' +
-                ", rank=" + rank +
-                '}';
-    }
 }
