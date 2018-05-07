@@ -60,7 +60,7 @@ public class HibernateConfiguration {
     }
 
     private Properties constructHibernateProperties() {
-        final String[] names = {"hibernate.dialect", "hibernate.show_sql", "hibernate.format_sql",
+        final String[] names = {"hibernate.dialect", "hibernate.show_sql",
                 "hibernate.hbm2ddl.auto", "hibernate.cache.provider_class", "hibernate.cache.use_second_level_cache",
                 "hibernate.cache.region.factory_class"};
 
