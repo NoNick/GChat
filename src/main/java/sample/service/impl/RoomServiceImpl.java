@@ -8,7 +8,7 @@ import sample.model.User;
 import sample.repository.RoomRepository;
 import sample.repository.UserRepository;
 import sample.service.RoomService;
-import sample.utils.SimpleValidator;
+import sample.utils.validation.GCValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -41,14 +41,14 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional(readOnly = true)
     public Room getRoomByName(String roomName) {
-        SimpleValidator.validateObject(roomName, "Name must not be null");
+        GCValidator.validateObject(roomName);
         return roomRepository.findOne(roomName);
     }
 
     @Override
     @Transactional
     public Room findOrCreateRoom(String roomName) {
-        SimpleValidator.validateObject(roomName, "Room name must not be null");
+        GCValidator.validateObject(roomName);
 
         if (roomRepository.exists(roomName)) {
             return getRoomByName(roomName);
@@ -61,6 +61,9 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public void setUserToRoom(User user, Room room) {
+        GCValidator.validateObject(user);
+        GCValidator.validateObject(room);
+
         Room roomFromDB = roomRepository.findOne(room.getName());
         User userFromDB = userRepository.findOne(user.getName());
 

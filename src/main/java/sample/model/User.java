@@ -2,10 +2,11 @@ package sample.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,14 +20,18 @@ import java.util.UUID;
 @Table(name = "user")
 public class User {
     @Id
+    @NotNull
+    @NotEmpty
     private String name;
     private UUID uuid;
+
     @Column
+    @NotNull
     private Integer rank;
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
-    private List<Message> messages;
+    private Set<Message> messages;
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)

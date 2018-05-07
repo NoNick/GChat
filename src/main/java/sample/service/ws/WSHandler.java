@@ -2,7 +2,7 @@ package sample.service.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component
+@Controller
 public class WSHandler extends TextWebSocketHandler {
 
     private final Map<UUID, WebSocketSession> sessionByUUID = new ConcurrentHashMap<>();
@@ -77,13 +77,15 @@ public class WSHandler extends TextWebSocketHandler {
             case "subscribe":
                 subscriptionService.subscribeUser(room, user, sessionByUUID);
                 break;
+            case "look":
+                messageService.showMessagesForUserInRoom(user, room, sessionByUUID);
+                break;
         }
     }
 
     private void report(String messageText, Boolean secret, User user, Room room) {
         Message msg = MessageConstructor.constructMessage(user, room, messageText, secret);
-        messageService.createMessage(msg);
-        messageService.sendMessageToSubscribers(msg, sessionByUUID);
+        messageService.sendMessage(room, msg, sessionByUUID);
     }
 
     private void echo(WebSocketSession session, User user) throws IOException {
