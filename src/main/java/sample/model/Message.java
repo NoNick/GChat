@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,8 +18,12 @@ import java.time.LocalDateTime;
 public class Message {
     @Id
     @GeneratedValue
+    @NotNull
     private Long id;
-    private String text;
+
+    @NotNull
+    private byte[] textBytes;
+
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime created;
     private boolean secret;

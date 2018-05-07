@@ -2,8 +2,10 @@ package sample.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -17,6 +19,8 @@ import java.util.Set;
 @Table(name = "rooms")
 public class Room {
     @Id
+    @NotNull
+    @NotEmpty
     private String name;
 
     @OneToMany(mappedBy = "room")
