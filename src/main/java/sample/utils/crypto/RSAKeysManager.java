@@ -25,13 +25,7 @@ import java.util.Map;
 @Slf4j
 public class RSAKeysManager {
     private static final String SECRET_KEY_SUFFIX = "_SECRET_KEY";
-    private static final char[] KEY_STORE_PASSWORD = "5b+ixDGsTePTX8Ff0ONXtg==".toCharArray(); //KeyStorePassword
-
-    private static final Integer[] RANKS = new Integer[]{
-            Ranks.SOLDIER_RANK,
-            Ranks.SERGEANT_RANK,
-            Ranks.LIEUTENANT_RANK,
-            Ranks.GENERAL_RANK};
+    private static final char[] KEY_STORE_PASSWORD = "5b+ixDGsTePTX8Ff0ONXtg==".toCharArray();
 
     private static final RanksEnum[] RANKS_ENUMS = new RanksEnum[]{
             RanksEnum.SOLDIER,
@@ -41,10 +35,10 @@ public class RSAKeysManager {
 
     private static final Map<Integer, RanksEnum> RANK_NAME_BY_RANK_INT = new HashMap<Integer, RanksEnum>() {
         {
-            put(RANKS[0], RANKS_ENUMS[0]);
-            put(RANKS[1], RANKS_ENUMS[1]);
-            put(RANKS[2], RANKS_ENUMS[2]);
-            put(RANKS[3], RANKS_ENUMS[3]);
+            put(Ranks.SOLDIER_RANK, RanksEnum.SOLDIER);
+            put(Ranks.SERGEANT_RANK, RanksEnum.SERGEANT);
+            put(Ranks.LIEUTENANT_RANK, RanksEnum.LIEUTENANT);
+            put(Ranks.GENERAL_RANK, RanksEnum.GENERAL);
         }
     };
 
@@ -162,6 +156,7 @@ public class RSAKeysManager {
         try (FileOutputStream fos = new FileOutputStream(Files.createFile(keyStorePath).toFile())) {
             keyStore.store(fos, KEY_STORE_PASSWORD);
             log.info("STORED!");
+            log.info("Path to keystore folder: {}", GLOBAL_KEY_STORAGE_PATH);
         }
     }
 
