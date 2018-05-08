@@ -1,6 +1,7 @@
 package sample.service;
 
 import org.springframework.web.socket.WebSocketSession;
+import sample.dto.MessageDto;
 import sample.dto.Receiver;
 import sample.model.Message;
 import sample.model.Room;
@@ -18,9 +19,9 @@ public interface MessageService {
 
     List<Receiver> getReceivers();
 
-    void sendMessage(Room room, Message message, Map<UUID, WebSocketSession> sessionByUUID);
+    MessageDto sendMessage(Room room, Message message, Map<UUID, WebSocketSession> sessionByUUID);
 
-    void showMessagesForUserInRoom(User user, Room room, Map<UUID, WebSocketSession> sessionByUUID);
+    List<MessageDto> showMessagesForUserInRoom(User user, Room room, Map<UUID, WebSocketSession> sessionByUUID);
 
     String salute(String name, String hash);
 }

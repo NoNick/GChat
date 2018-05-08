@@ -3,7 +3,7 @@ package sample.service;
 import sample.model.Room;
 import sample.model.User;
 
-import java.util.Set;
+import java.util.List;
 
 public interface UserService {
 
@@ -11,7 +11,7 @@ public interface UserService {
 
     User createUser(User user);
 
-    Set<User> getAllUsersInRoom(Room room);
+    List<User> getAllUsersInRoom(Room room);
 
     boolean containsUserInRoom(User user, Room room);
 }

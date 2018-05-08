@@ -24,12 +24,11 @@ public class UserValidationImpl implements UserValidation {
     @Override
     @Transactional
     public User getValidUser(String name, String hash) {
-        User user = userService.getUserByName(name);
-
         Optional<Integer> maybeRank = Ranks.getRank(name, hash);
         if (!maybeRank.isPresent()) {
             return null;
         }
+        User user = userService.getUserByName(name);
         if (user == null) {
             user = User.builder()
                     .uuid(UUID.randomUUID())

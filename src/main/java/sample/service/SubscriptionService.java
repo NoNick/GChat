@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface SubscriptionService {
 
-    void subscribeUser(Room room, User user, Map<UUID, WebSocketSession> sessionByUser);
+    boolean subscribeUser(Room room, User user, Map<UUID, WebSocketSession> sessionByUser);
 }

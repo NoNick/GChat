@@ -9,7 +9,7 @@ import sample.repository.UserRepository;
 import sample.service.UserService;
 import sample.utils.validation.GCValidator;
 
-import java.util.Set;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Set<User> getAllUsersInRoom(Room room) {
+    public List<User> getAllUsersInRoom(Room room) {
         GCValidator.validateObject(room);
         return userRepository.findAllByUserRoomsContaining(room);
     }

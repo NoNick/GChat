@@ -23,7 +23,7 @@ public class MD5Hashing {
     }
 
     public static void main(String[] args) {
-        System.out.println(getMD5(null));
+        System.out.println(getMD5("Usernamea"));
 
     }
 }

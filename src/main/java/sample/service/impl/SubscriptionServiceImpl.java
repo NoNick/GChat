@@ -39,7 +39,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void subscribeUser(Room room, User user, Map<UUID, WebSocketSession> sessionByUser) {
+    public boolean subscribeUser(Room room, User user, Map<UUID, WebSocketSession> sessionByUser) {
 
         if (!isUserSubscribed(room, user, sessionByUser)) {
             roomService.setUserToRoom(user, room);
@@ -50,8 +50,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             saveUserEntranceTime(room, user);
 
             messageService.sendMessage(room, message, sessionByUser);
-        }
-
+            return true;
+        } else return false;
     }
 
     private void saveUserEntranceTime(Room room, User user) {
@@ -63,10 +63,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     private boolean isUserSubscribed(Room room, User user, Map<UUID, WebSocketSession> sessionByUser) {
-        if (userService.containsUserInRoom(user, room)) {
+        boolean b = userService.containsUserInRoom(user, room);
+        if (b) {
             try {
-                sessionByUser.get(user.getUuid()).sendMessage(new TextMessage("You already subscribed to room!"));
-                return true;
+                WebSocketSession session = sessionByUser.get(user.getUuid());
+                if (session != null && session.isOpen()) {
+                    session.sendMessage(new TextMessage("You already subscribed to room!"));
+                    return true;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

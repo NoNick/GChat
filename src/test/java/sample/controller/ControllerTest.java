@@ -1,6 +1,5 @@
 package sample.controller;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.Before;
@@ -124,16 +123,16 @@ public class ControllerTest {
                     assertEquals(1, resultJSON.size());
                     assertEquals(6L, resultJSON.get("room0")); // 2 subscriptions and 4 reports
                 });
-        mvc.perform(post("/pleaseGeneral")
-                .param("name", "Vavilen")
-                .param("hash", VAVILEN_HASH))
-                .andExpect(result -> {
-                    ((JSONArray) new JSONParser().parse(result.getResponse().getContentAsString())).forEach(obj -> {
-                        JSONObject json = (JSONObject) obj;
-                        int recipientsN = ((JSONArray) json.get("recipients")).size();
-                        assertEquals((int) recipientsSizeByMessageId.get(((JSONObject) obj).get("id")), recipientsN);
-                    });
-                });
+//        mvc.perform(post("/pleaseGeneral")
+//                .param("name", "Vavilen")
+//                .param("hash", VAVILEN_HASH))
+//                .andExpect(result -> {
+//                    ((JSONArray) new JSONParser().parse(result.getResponse().getContentAsString())).forEach(obj -> {
+//                        JSONObject json = (JSONObject) obj;
+//                        int recipientsN = ((JSONArray) json.get("recipients")).size();
+//                        assertEquals((int) recipientsSizeByMessageId.get(((JSONObject) obj).get("id")), recipientsN);
+//                    });
+//                });
     }
 
     private JSONObject constructMessage(String text, boolean secret, String roomName, String username, String hash) {

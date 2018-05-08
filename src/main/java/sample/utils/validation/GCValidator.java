@@ -17,7 +17,7 @@ public class GCValidator {
 
     public static void validateObject(Object object) {
         if (object == null) {
-            throw new IllegalArgumentException("Object must not be null!");
+            throw new InvalidArgumentException(ServiceErrorCode.NULL_ARGUMENT);
         }
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();

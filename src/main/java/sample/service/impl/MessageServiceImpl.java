@@ -1,9 +1,11 @@
 package sample.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import sample.dto.MessageDto;
 import sample.dto.Receiver;
@@ -21,6 +23,7 @@ import sample.utils.Ranks;
 import sample.utils.crypto.Cryptography;
 import sample.utils.validation.GCValidator;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,26 +35,25 @@ import java.util.stream.Stream;
 @Service
 public class MessageServiceImpl implements MessageService {
 
-    private Map<Message, Set<User>> receiversByMessage = new ConcurrentHashMap<>();
+    private final ObjectMapper objectMapper;
 
     private final UserRoomEntranceTimeRepository entranceTimeRepository;
-    private final SessionMessageSender sessionMessageSender;
     private final MessageRepository messageRepository;
     private final RoomService roomService;
     private final UserService userService;
+    private Map<Message, List<User>> receiversByMessage = new ConcurrentHashMap<>();
 
 
     @Autowired
     public MessageServiceImpl(UserRoomEntranceTimeRepository entranceTimeRepository,
-                              SessionMessageSender sessionMessageSender,
                               MessageRepository messageRepository,
                               RoomService roomService,
-                              UserService userService) {
+                              UserService userService, ObjectMapper objectMapper) {
         this.entranceTimeRepository = entranceTimeRepository;
-        this.sessionMessageSender = sessionMessageSender;
         this.messageRepository = messageRepository;
         this.roomService = roomService;
         this.userService = userService;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -80,26 +82,31 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void sendMessage(Room room, Message message, Map<UUID, WebSocketSession> sessionByUUID) {
+    public MessageDto sendMessage(Room room, Message message, Map<UUID, WebSocketSession> sessionByUUID) {
         GCValidator.validateObject(room);
         GCValidator.validateObject(message);
+        GCValidator.validateObject(sessionByUUID);
 
         Room createdRoom = roomService.findOrCreateRoom(room.getName());
         createdRoom.getMessages().add(message);
 
-        Set<User> allUsersInRoom = userService.getAllUsersInRoom(createdRoom);
+        List<User> allUsersInRoom = userService.getAllUsersInRoom(createdRoom);
+
+        MessageDto returningMessage;
 
         if (message.isSecret()) {
-            sendEncryptedMessage(message, sessionByUUID, allUsersInRoom);
+            returningMessage = sendEncryptedMessage(message, sessionByUUID, allUsersInRoom);
         } else {
-            sendPublicMessage(message, sessionByUUID, allUsersInRoom);
+            returningMessage = sendPublicMessage(message, sessionByUUID, allUsersInRoom);
         }
         receiversByMessage.put(message, allUsersInRoom);
+
+        return returningMessage;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public void showMessagesForUserInRoom(User user, Room room, Map<UUID, WebSocketSession> sessionByUUID) {
+    public List<MessageDto> showMessagesForUserInRoom(User user, Room room, Map<UUID, WebSocketSession> sessionByUUID) {
         GCValidator.validateObject(user);
         GCValidator.validateObject(room);
 
@@ -112,11 +119,12 @@ public class MessageServiceImpl implements MessageService {
         Stream<MessageDto> secretMessagesDto = getSecretMessagesDtoStream(user, secretMessages, roomEntranceTime);
         Stream<MessageDto> publicMessagesDto = getPublicMessagesDtoStream(createdRoom, roomEntranceTime);
 
-        Set<MessageDto> combinedSet = Stream
+        List<MessageDto> combinedSet = Stream
                 .concat(secretMessagesDto, publicMessagesDto)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
-        sessionMessageSender.sendObjectToSession(combinedSet, sessionByUUID).accept(user);
+        sendObjectToSession(combinedSet, sessionByUUID).accept(user);
+        return combinedSet;
     }
 
     @Override
@@ -130,22 +138,25 @@ public class MessageServiceImpl implements MessageService {
         return result;
     }
 
-    private void createReceiverEntry(List<Receiver> receiversList, Message message, Set<User> users) {
+    private void createReceiverEntry(List<Receiver> receiversList, Message message, List<User> users) {
         Receiver receiver = Receiver.builder()
                 .messageId(message.getId())
                 .recipients(users.stream().map(User::getName).collect(Collectors.toList()))
                 .build();
+
         receiversList.add(receiver);
     }
 
-    private void sendPublicMessage(Message message, Map<UUID, WebSocketSession> sessionByUUID, Set<User> allUsersInRoom) {
+    private MessageDto sendPublicMessage(Message message, Map<UUID, WebSocketSession> sessionByUUID, List<User> allUsersInRoom) {
         Message persistedMessage = createMessage(message);
         MessageDto dto = MessageConstructor.toDto(persistedMessage);
+
         allUsersInRoom
-                .forEach(sessionMessageSender.sendObjectToSession(dto, sessionByUUID));
+                .forEach(sendObjectToSession(dto, sessionByUUID));
+        return dto;
     }
 
-    private void sendEncryptedMessage(Message message, Map<UUID, WebSocketSession> sessionByUUID, Set<User> allUsersInRoom) {
+    private MessageDto sendEncryptedMessage(Message message, Map<UUID, WebSocketSession> sessionByUUID, List<User> allUsersInRoom) {
         Message encrypted = MessageConstructor.getMessageWithEncryptedText(message);
         Message persistedMessage = createMessage(encrypted);
 
@@ -154,7 +165,8 @@ public class MessageServiceImpl implements MessageService {
         allUsersInRoom
                 .stream()
                 .filter(filterByHigherRank(message))
-                .forEach(sessionMessageSender.sendObjectToSession(dto, sessionByUUID));
+                .forEach(sendObjectToSession(dto, sessionByUUID));
+        return dto;
     }
 
     private Stream<MessageDto> getPublicMessagesDtoStream(Room createdRoom, UserRoomEntranceTime roomEntranceTime) {
@@ -168,6 +180,7 @@ public class MessageServiceImpl implements MessageService {
     private Stream<MessageDto> getSecretMessagesDtoStream(User user, Set<Message> secretMessages, UserRoomEntranceTime roomEntranceTime) {
         return secretMessages.stream()
                 .filter(messageCreatedAfter(roomEntranceTime))
+                .filter(message -> message.getUser().getRank() <= user.getRank())
                 .peek(decryptMessageForRank(user.getRank()))
                 .map(MessageConstructor::toDto);
     }
@@ -177,6 +190,19 @@ public class MessageServiceImpl implements MessageService {
             Integer messageSenderRank = message.getUser().getRank();
             if (rank.equals(messageSenderRank)) {
                 message.setTextBytes(Cryptography.decryptMessageWithRank(message, rank));
+            }
+        };
+    }
+
+    private Consumer<User> sendObjectToSession(Object object, Map<UUID, WebSocketSession> sessionByUser) {
+        return user -> {
+            WebSocketSession session = sessionByUser.get(user.getUuid());
+            if (session != null && session.isOpen()) {
+                try {
+                    session.sendMessage(new TextMessage(objectMapper.writeValueAsString(object)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         };
     }
