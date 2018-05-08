@@ -48,8 +48,9 @@ public class RSAKeysManager {
         }
     };
 
-    private static String GLOBAL_KEY_STORAGE_PATH;
-    private static String KEYSTORE_PATH;
+    static final String KEYSTORE_FOLDER_NAME = "keystore\\";
+    private static String GLOBAL_KEY_STORAGE_PATH = "C:\\Users\\evgenii_vanchugov\\IdeaProjects\\GChat\\" + KEYSTORE_FOLDER_NAME;
+    private static String KEYSTORE_PATH = KEYSTORE_FOLDER_NAME + "keystore.ks";
 
     RSAKeysManager(String globalKeyStoragePath, String keystorePath) {
         GLOBAL_KEY_STORAGE_PATH = globalKeyStoragePath;

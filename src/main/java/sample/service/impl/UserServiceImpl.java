@@ -2,7 +2,6 @@ package sample.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sample.model.Room;
 import sample.model.User;
@@ -44,7 +43,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional(readOnly = true)
     public boolean containsUserInRoom(User user, Room room) {
         GCValidator.validateObject(user);
         GCValidator.validateObject(room);

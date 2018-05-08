@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = "userRooms")
+@EqualsAndHashCode(exclude = {"userRooms", "messages"})
 @ToString(exclude = {"userRooms", "messages"})
 @Table(name = "user")
 public class User {

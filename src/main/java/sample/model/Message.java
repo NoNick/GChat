@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 public class Message {
     @Id
     @GeneratedValue
-    @NotNull
     private Long id;
 
     @NotNull
