@@ -57,7 +57,7 @@ public class WSHandler extends TextWebSocketHandler {
 
         User user = userValidation.getValidUser(name, hash);
         if (user == null) {
-            session.sendMessage(new TextMessage("Unauthorized"));
+            unauthorizedMessage(session);
             return;
         }
 
@@ -81,6 +81,10 @@ public class WSHandler extends TextWebSocketHandler {
                 messageService.showMessagesForUserInRoom(user, room, sessionByUUID);
                 break;
         }
+    }
+
+    private void unauthorizedMessage(WebSocketSession session) throws IOException {
+        session.sendMessage(new TextMessage("Unauthorized"));
     }
 
     private void report(String messageText, Boolean secret, User user, Room room) {
