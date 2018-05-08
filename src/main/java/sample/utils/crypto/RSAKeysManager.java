@@ -85,7 +85,6 @@ public class RSAKeysManager {
         KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(KEY_STORE_PASSWORD);
         try {
             String alias = rankName + SECRET_KEY_SUFFIX;
-            assert keyStore == null;
             privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, passwordProtection);
         } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
             e.printStackTrace();

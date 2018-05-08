@@ -1,4 +1,4 @@
-package sample.service.impl;
+package sample.unit.service;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -16,6 +16,7 @@ import sample.service.MessageService;
 import sample.service.RoomService;
 import sample.service.SubscriptionService;
 import sample.service.UserService;
+import sample.service.impl.SubscriptionServiceImpl;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package sample.service.impl;
+package sample.unit.service;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import sample.model.User;
 import sample.service.UserService;
 import sample.service.UserValidation;
+import sample.service.impl.UserValidationImpl;
 import sample.utils.Ranks;
 
 import java.util.UUID;

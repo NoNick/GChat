@@ -1,4 +1,4 @@
-package sample.service.impl;
+package sample.unit.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +17,7 @@ import sample.service.MessageConstructor;
 import sample.service.RoomService;
 import sample.service.UserService;
 import sample.service.exceptions.InvalidArgumentException;
+import sample.service.impl.MessageServiceImpl;
 import sample.utils.Ranks;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.*;
 @Slf4j
 public class MessageServiceImplTest {
 
+    private static final LocalDateTime BEFORE = LocalDateTime.of(2018, 5, 8, 13, 0);
     private static final LocalDateTime NOW = LocalDateTime.of(2018, 5, 8, 14, 0);
     private static final LocalDateTime AFTER = LocalDateTime.of(2018, 5, 8, 15, 0);
     private static final Long PUBLIC_SOLDIER_MESSAGE_ID = 1L;
@@ -107,6 +109,7 @@ public class MessageServiceImplTest {
                 .id(PUBLIC_SOLDIER_MESSAGE_ID)
                 .textBytes(SOLDIER_PUBLIC_MESSAGE_TEXT.getBytes())
                 .secret(false)
+                .created(AFTER)
                 .room(room)
                 .user(soldier)
                 .build();
@@ -115,13 +118,14 @@ public class MessageServiceImplTest {
                 .id(PUBLIC_SOLDIER_MESSAGE_ID)
                 .textBytes(SOLDIER_SECRET_MESSAGE_TEXT.getBytes())
                 .secret(false)
+                .created(AFTER)
                 .room(room)
                 .user(soldier)
                 .build();
 
         entranceTimeAfter = UserRoomEntranceTime.builder()
                 .id(2L)
-                .time(AFTER)
+                .time(NOW)
                 .roomName(ROOM_NAME)
                 .userUuid(anotherSoldier.getUuid())
                 .build();
@@ -217,6 +221,7 @@ public class MessageServiceImplTest {
 
         assertThat(actual.getText()).isEqualToIgnoringCase(SOLDIER_PUBLIC_MESSAGE_TEXT);
 
+        verifyMockSession(1);
         verifyMockInteractionsForMessageSending(1, publicSoldierMessage);
     }
 
@@ -233,6 +238,7 @@ public class MessageServiceImplTest {
 
         assertThat(actual.getText()).isEqualToIgnoringCase(SOLDIER_PUBLIC_MESSAGE_TEXT);
 
+        verifyMockSession(1);
         verifyMockInteractionsForMessageSending(1, publicSoldierMessage);
     }
 
@@ -313,11 +319,13 @@ public class MessageServiceImplTest {
     //Valid data. Can't get public messages before user login time
     @Test
     public void showMessagesForUserInRoom_cantSeePublicMessagesBeforeLoginTime() throws IOException {
+        publicSoldierMessage.setCreated(BEFORE);
         cantGetMessageBeforeLoginTime(publicSoldierMessage);
     }
 
     @Test
     public void showMessagesForUserInRoom_cantSeeEncryptedMessagesBeforeLoginTime() throws IOException {
+        secretSoldierMessage.setCreated(BEFORE);
         cantGetMessageBeforeLoginTime(secretSoldierMessage);
     }
 
@@ -402,7 +410,6 @@ public class MessageServiceImplTest {
     }
 
     private void verifyMockInteractionsForMessageSending(int interactionTimes, Message message) throws IOException {
-        verifyMockSession(interactionTimes);
         verify(messageRepository, times(1)).save(message);
         verify(roomService).findOrCreateRoom(ROOM_NAME);
     }

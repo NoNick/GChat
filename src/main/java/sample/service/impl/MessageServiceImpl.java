@@ -109,6 +109,7 @@ public class MessageServiceImpl implements MessageService {
     public List<MessageDto> showMessagesForUserInRoom(User user, Room room, Map<UUID, WebSocketSession> sessionByUUID) {
         GCValidator.validateObject(user);
         GCValidator.validateObject(room);
+        GCValidator.validateObject(sessionByUUID);
 
         Room createdRoom = roomService.findOrCreateRoom(room.getName());
 

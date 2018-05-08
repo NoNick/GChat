@@ -1,4 +1,4 @@
-package sample.service.impl;
+package sample.unit.service;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +8,7 @@ import sample.model.User;
 import sample.repository.RoomRepository;
 import sample.repository.UserRepository;
 import sample.service.exceptions.InvalidArgumentException;
+import sample.service.impl.RoomServiceImpl;
 import sample.utils.Ranks;
 
 import java.time.LocalDateTime;
@@ -93,7 +94,7 @@ public class RoomServiceImplTest {
         roomService.getRoomByName(ROOM_1_NAME);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidArgumentException.class)
     public void getRoomByName_nullName() {
         roomService.getRoomByName(null);
     }
@@ -132,12 +133,12 @@ public class RoomServiceImplTest {
         assertThat(room1.getUsers()).contains(user1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidArgumentException.class)
     public void setUserToRoom_nullUser() {
         roomService.setUserToRoom(null, room1);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InvalidArgumentException.class)
     public void setUserToRoom_nullRoom() {
         roomService.setUserToRoom(user1, null);
     }

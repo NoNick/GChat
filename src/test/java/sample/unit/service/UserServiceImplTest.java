@@ -1,4 +1,4 @@
-package sample.service.impl;
+package sample.unit.service;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -6,6 +6,7 @@ import sample.model.Room;
 import sample.model.User;
 import sample.repository.UserRepository;
 import sample.service.exceptions.InvalidArgumentException;
+import sample.service.impl.UserServiceImpl;
 import sample.utils.Ranks;
 
 import java.util.*;
