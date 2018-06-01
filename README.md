@@ -16,7 +16,7 @@ Once upon a time a general decided to make his very own secure chat by the name 
 Since “developers” were chosen among soldiers with little to nothing background, the General soon found out that the letter G in the product stands not for “General’s”. After counseling with his advisers he decided current “developers” would be better off shoveling dirt.
 They haven’t finished the project, leaving lines of undocumented code with poor tests. You should debug, refactor and optimize those lines. Application’s behavior may differ from described above, that should be fixed as well. Protocol for ‘report’, ‘subscribe’, ‘message’ WS-packages and /rooms, /pleaseGeneral POST-methods should be kept as is (although implementation may differ), the rest is up to you.
 
-Unfortunately, the General is not tech savvy enough, so he didn’t understand adviser’s rant, but here’s some keywords he remembered: spring-security, asymmetric encryption, getting rid of God-classes (these words were mentioned quite often), loose coupling (these too), Jackson, HQL, java.util.concurrency (same thing), logging, exception handling.
+Unfortunately, the General is not tech savvy enough, so he didn’t understand adviser’s rant, but here’s some keywords he remembered: spring-security, getting rid of God-classes (these words were mentioned quite often), loose coupling (these too), Jackson, HQL, java.util.concurrency (same thing), logging, exception handling.
 
 **Motherland counts on you, comrade!**
 
