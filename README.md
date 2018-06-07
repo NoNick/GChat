@@ -8,7 +8,7 @@ Once upon a time a general decided to make his very own secure chat by the name 
 
 - Any user can send two types of messages into a specified room: public and secret. The former is visible to everyone, while the latter should be received only by users with the same or higher rank. When a user sends message in a room, he subscribes to it (if wasn’t) and receives his message.
 
-- The General wants to keep track of who receives messages in current session (i.e. since server was started). Some POST-method should return list of messages with their ids and list of receiver’s names. The receiver of a message is the user who joined a room before the message was sent, and has high enough rank to see the message (or has any rank if the message is public).
+- The General wants to keep track of who receives messages in current session (i.e. since server was started). Some POST-method should return list of messages with their ids and list of receiver’s names. The receiver of a message is the user who joined a room before the message was sent, and has high enough rank to see the message (or has any rank if the message is public). When optimizing this method, assume it cab be called pretty often.
 
 - Names of rooms should be returned together with total number of messages in them. This statistics should be available only for the General.
 
@@ -38,3 +38,5 @@ Unfortunately, the General is not tech savvy enough, so he didn’t understand a
 `<Tab 2>: var socket = new WebSocket("ws://localhost:8080/template/WebSocket");`
 
 `<Tab 2>: socket.send('{"action":"report", "name": "Peter", "hash": "iHDxWFurtv+PN6akU31KqQ==", "secret": false, "message": "text", "room": "room0"}');`
+
+As EugeneVanchugov mentioned, Smart Websocket Client extension for Chrome is the convinient tool for such interactions.
