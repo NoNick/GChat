@@ -39,4 +39,4 @@ Unfortunately, the General is not tech savvy enough, so he didn’t understand a
 
 `<Tab 2>: socket.send('{"action":"report", "name": "Peter", "hash": "iHDxWFurtv+PN6akU31KqQ==", "secret": false, "message": "text", "room": "room0"}');`
 
-As EugeneVanchugov mentioned, Smart Websocket Client extension for Chrome is the convinient tool for such interactions.
+As EugeneVanchugov mentioned, **Smart Websocket Client** extension for Chrome is the convinient tool for such interactions.
